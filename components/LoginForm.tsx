@@ -100,6 +100,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
     }
   };
 
+  const handleAutoFillLogin = () => {
+    const samples = [
+      { name: 'Ahmad Faiz', checkpoint: 'CP Utama (Entry)', programName: 'Program Latihan ResQ Amal', isSimulasi: true, mode: StorageMode.LOCAL },
+      { name: 'Siti Sarah', checkpoint: 'Sektor B (Padang)', programName: 'Misi Bantuan Banjir Pantai Timur', isSimulasi: true, mode: StorageMode.LOCAL },
+      { name: 'Responder Admin', checkpoint: 'Pusat Kawalan Medikal', programName: 'Protokol Kecemasan 2025', isSimulasi: false, mode: StorageMode.CLOUD }
+    ];
+    const random = samples[Math.floor(Math.random() * samples.length)];
+    setLoginData(random);
+    setShowDropdown(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginData.name || !loginData.checkpoint || !loginData.programName) {
@@ -166,6 +177,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
 
       {/* MAIN LOGIN FORM */}
       <div className="w-full max-w-lg bg-white rounded-[3rem] shadow-2xl border border-slate-100 animate-in zoom-in-95 relative z-10 overflow-hidden">
+        {/* Floating Auto-Fill Action */}
+        <button 
+          type="button"
+          onClick={handleAutoFillLogin}
+          className="absolute top-8 right-8 p-3 bg-amber-100 text-amber-600 rounded-2xl hover:bg-amber-500 hover:text-white transition-all active:scale-90 shadow-lg shadow-amber-200/50 group z-20"
+          title="Auto-Fill Login Data"
+        >
+          <Zap size={20} className="group-hover:animate-pulse" />
+        </button>
+
         <div className="p-10">
           
           {/* Branding Section */}
