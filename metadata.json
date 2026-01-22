@@ -4,6 +4,11 @@
     "microphone",
     "geolocation"
   ],
-  "name": "Responder ResQ v0.5",
-  "description": ""
+  "name": "Responder ResQ Cloud",
+  "short_name": "ResQ Cloud",
+  "description": "Sistem Pengurusan Kes Kecemasan Awan ResQ Amal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb"
 }

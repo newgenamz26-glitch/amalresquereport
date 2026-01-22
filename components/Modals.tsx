@@ -107,14 +107,9 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
         result.onchange = () => {
           setMicStatus(result.state as any);
         };
-      } else {
-        // Fallback for browsers that don't support query for microphone
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(t => t.stop());
-        setMicStatus('granted');
       }
     } catch (e) {
-      console.warn("Permission check failed or not supported:", e);
+      console.warn("Permission API not fully supported, will rely on getUserMedia catch.");
     }
   };
 
@@ -142,7 +137,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
 
   const startVoice = async () => {
     if (micStatus === 'denied') {
-      alert("Akses mikrofon disekat. Sila benarkan akses dalam tetapan pelayar anda (biasanya pada ikon mangga di bar alamat) untuk menggunakan fungsi rakaman suara AI.");
+      alert("Akses mikrofon telah disekat. Sila benarkan akses dalam tetapan pelayar anda (klik ikon mangga di bar alamat) untuk membolehkan input suara AI.");
       return;
     }
 
@@ -206,7 +201,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError' || error.message?.includes('denied')) {
         setMicStatus('denied');
       } else {
-        alert("Ralat Mikrofon: Pastikan peranti anda mempunyai mikrofon dan sambungan internet yang stabil.");
+        alert("Ralat teknikal mikrofon. Pastikan anda menggunakan HTTPS dan peranti mempunyai mikrofon yang berfungsi.");
       }
     }
   };
@@ -255,16 +250,18 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-xl" onClick={onClose}></div>
       <form onSubmit={handleFormSubmit} className="bg-slate-50 w-full max-w-lg rounded-[3.5rem] p-8 sm:p-10 z-10 animate-in slide-in-from-bottom-20 space-y-6 overflow-y-auto max-h-[92vh] relative custom-scrollbar shadow-3xl border border-white">
         
-        {/* Status Mic Banner - Paling Atas */}
+        {/* Banner Status Mikrofon */}
         {micStatus === 'denied' && (
-          <div className="p-4 bg-rose-600 rounded-[2rem] text-white flex items-center gap-4 animate-in slide-in-from-top-4 shadow-lg shadow-rose-200">
-            <div className="p-2 bg-white/20 rounded-xl"><AlertTriangle size={20}/></div>
+          <div className="bg-rose-600 text-white p-4 rounded-3xl flex items-center gap-4 animate-in slide-in-from-top-4 shadow-xl shadow-rose-200">
+            <div className="p-2 bg-white/20 rounded-xl">
+              <MicOff size={20} />
+            </div>
             <div className="flex-1">
               <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Akses Mikrofon Disekat</p>
-              <p className="text-[8px] font-bold text-rose-100 uppercase tracking-tight">Sila benarkan akses di tetapan pelayar anda.</p>
+              <p className="text-[8px] font-bold text-rose-100 uppercase">Sila benarkan mikrofon di tetapan pelayar anda untuk guna AI suara.</p>
             </div>
-            <button type="button" onClick={checkMicPermission} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-              <RefreshCw size={14}/>
+            <button type="button" onClick={checkMicPermission} className="p-2 hover:bg-white/10 rounded-lg">
+              <RefreshCw size={14} />
             </button>
           </div>
         )}
@@ -339,7 +336,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
                   Aduan / Simptom
                 </InputLabel>
 
-                {!isListeningSymptoms && micStatus !== 'denied' && (
+                {micStatus === 'prompt' && (
                   <div className="mx-3 mt-1 mb-2 px-3 py-2 bg-blue-50/50 border border-blue-100 rounded-xl flex items-center gap-2 animate-in fade-in">
                     <Info size={12} className="text-blue-500 shrink-0" />
                     <p className="text-[7px] font-bold text-blue-400 uppercase leading-none">
@@ -434,7 +431,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
   );
 };
 
-// --- Case Detail Modal ---
+// ... (CaseDetailModal, SubmissionSuccessModal, and WhatsAppPreviewModal stay the same as in previous file)
 export const CaseDetailModal = ({ selectedCase, onClose }: { selectedCase: CaseRecord | null, onClose: () => void }) => {
   if (!selectedCase) return null;
 
@@ -542,7 +539,6 @@ export const CaseDetailModal = ({ selectedCase, onClose }: { selectedCase: CaseR
   );
 };
 
-// --- Submission Success Modal ---
 export const SubmissionSuccessModal = ({ isOpen, onClose, onShare }: { isOpen: boolean, onClose: () => void, onShare: () => void }) => {
   if (!isOpen) return null;
 
@@ -570,7 +566,6 @@ export const SubmissionSuccessModal = ({ isOpen, onClose, onShare }: { isOpen: b
   );
 };
 
-// --- WhatsApp Preview Modal ---
 export const WhatsAppPreviewModal = ({ isOpen, selectedCase, onClose }: { isOpen: boolean, selectedCase: CaseRecord | null, onClose: () => void }) => {
   if (!isOpen || !selectedCase) return null;
 
