@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ClipboardList, Send, User, MapPin, Activity, Heart, CheckCircle, MessageSquare, Zap, ShieldAlert, Clock, Info, Thermometer, Droplets, Navigation, RefreshCw, Map as MapIcon, UserCheck, CheckCircle2, Mic, MicOff, Share2, AlertCircle, ShieldEllipsis } from 'lucide-react';
+import { X, ClipboardList, Send, User, MapPin, Activity, Heart, CheckCircle, MessageSquare, Zap, ShieldAlert, Clock, Info, Thermometer, Droplets, Navigation, RefreshCw, Map as MapIcon, UserCheck, CheckCircle2, Mic, MicOff, Share2, AlertCircle, ShieldEllipsis, AlertTriangle } from 'lucide-react';
 import { Gender, CaseRecord } from '../types';
 import { startLiveAssistant } from '../services/geminiService';
 
@@ -36,7 +36,7 @@ const InputLabel = ({ children, required, onMicClick, isListening, isDenied }: {
       <button 
         type="button" 
         onClick={onMicClick}
-        title={isDenied ? "Akses Mikrofon Disekat" : (isListening ? "Berhenti Merakam" : "Guna Suara")}
+        title={isDenied ? "Akses Mikrofon Disekat" : (isListening ? "Berhenti Merakam" : "Guna Suara (AI)")}
         className={`p-1.5 rounded-lg transition-all active:scale-90 ${
           isListening ? 'bg-blue-600 text-white animate-pulse shadow-lg shadow-blue-200' : 
           isDenied ? 'bg-rose-100 text-rose-500 border border-rose-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
@@ -82,7 +82,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
   const [isLocating, setIsLocating] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
   const [isListeningSymptoms, setIsListeningSymptoms] = useState(false);
-  const [isMicDenied, setIsMicDenied] = useState(false);
+  const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const sessionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
     } else {
       stopVoice();
       setLocError(null);
-      setIsMicDenied(false);
+      setMicStatus('prompt');
     }
   }, [isOpen, responderName]);
 
@@ -102,15 +102,19 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
     try {
       if (navigator.permissions && navigator.permissions.query) {
         const result = await navigator.permissions.query({ name: 'microphone' as any });
-        setIsMicDenied(result.state === 'denied');
+        setMicStatus(result.state as any);
         
-        // Listener for manual changes in browser settings
         result.onchange = () => {
-          setIsMicDenied(result.state === 'denied');
+          setMicStatus(result.state as any);
         };
+      } else {
+        // Fallback for browsers that don't support query for microphone
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+        setMicStatus('granted');
       }
     } catch (e) {
-      console.warn("Permissions API not supported for microphone query", e);
+      console.warn("Permission check failed or not supported:", e);
     }
   };
 
@@ -129,7 +133,6 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
           case err.POSITION_UNAVAILABLE: msg = "Info Lokasi Tiada"; break;
           case err.TIMEOUT: msg = "GPS Timeout"; break;
         }
-        console.error("GPS Error:", err.message || msg);
         setLocError(msg);
         setIsLocating(false);
       },
@@ -138,8 +141,8 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
   };
 
   const startVoice = async () => {
-    if (isMicDenied) {
-      alert("Akses mikrofon telah disekat pada pelayar anda. Sila benarkan akses dalam tetapan pelayar (klik ikon mangga di bar alamat) untuk menggunakan fungsi suara.");
+    if (micStatus === 'denied') {
+      alert("Akses mikrofon disekat. Sila benarkan akses dalam tetapan pelayar anda (biasanya pada ikon mangga di bar alamat) untuk menggunakan fungsi rakaman suara AI.");
       return;
     }
 
@@ -151,7 +154,7 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setIsListeningSymptoms(true);
-      setIsMicDenied(false);
+      setMicStatus('granted');
 
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       const inputAudioContext = new AudioContextClass({ sampleRate: 16000 });
@@ -201,9 +204,9 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
       console.error("Mic error:", error);
       setIsListeningSymptoms(false);
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError' || error.message?.includes('denied')) {
-        setIsMicDenied(true);
+        setMicStatus('denied');
       } else {
-        alert("Ralat Mikrofon: Pastikan peranti anda mempunyai mikrofon dan sambungan selamat (HTTPS).");
+        alert("Ralat Mikrofon: Pastikan peranti anda mempunyai mikrofon dan sambungan internet yang stabil.");
       }
     }
   };
@@ -251,6 +254,21 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
     <div className="fixed inset-0 z-[100] flex items-end justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-xl" onClick={onClose}></div>
       <form onSubmit={handleFormSubmit} className="bg-slate-50 w-full max-w-lg rounded-[3.5rem] p-8 sm:p-10 z-10 animate-in slide-in-from-bottom-20 space-y-6 overflow-y-auto max-h-[92vh] relative custom-scrollbar shadow-3xl border border-white">
+        
+        {/* Status Mic Banner - Paling Atas */}
+        {micStatus === 'denied' && (
+          <div className="p-4 bg-rose-600 rounded-[2rem] text-white flex items-center gap-4 animate-in slide-in-from-top-4 shadow-lg shadow-rose-200">
+            <div className="p-2 bg-white/20 rounded-xl"><AlertTriangle size={20}/></div>
+            <div className="flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Akses Mikrofon Disekat</p>
+              <p className="text-[8px] font-bold text-rose-100 uppercase tracking-tight">Sila benarkan akses di tetapan pelayar anda.</p>
+            </div>
+            <button type="button" onClick={checkMicPermission} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+              <RefreshCw size={14}/>
+            </button>
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-2xl ${isSimulasi ? 'bg-amber-100 text-amber-600' : 'bg-blue-600 text-white shadow-lg shadow-blue-200'}`}><ClipboardList size={24}/></div>
@@ -316,26 +334,12 @@ export const CaseEntryModal = ({ isOpen, onClose, onSubmit, isSimulasi, responde
                   required 
                   onMicClick={startVoice} 
                   isListening={isListeningSymptoms} 
-                  isDenied={isMicDenied}
+                  isDenied={micStatus === 'denied'}
                 >
                   Aduan / Simptom
                 </InputLabel>
 
-                {isMicDenied && (
-                  <div className="mx-3 mt-1 mb-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2 border-dashed">
-                    <AlertCircle size={14} className="text-rose-500 shrink-0" />
-                    <div className="space-y-0.5">
-                      <p className="text-[9px] font-black text-rose-600 uppercase tracking-tight leading-tight">
-                        Fungsi Suara Disekat
-                      </p>
-                      <p className="text-[7px] font-bold text-rose-400 uppercase leading-none">
-                        Benarkan mikrofon di tetapan pelayar untuk guna ciri ini.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {!isMicDenied && !isListeningSymptoms && (
+                {!isListeningSymptoms && micStatus !== 'denied' && (
                   <div className="mx-3 mt-1 mb-2 px-3 py-2 bg-blue-50/50 border border-blue-100 rounded-xl flex items-center gap-2 animate-in fade-in">
                     <Info size={12} className="text-blue-500 shrink-0" />
                     <p className="text-[7px] font-bold text-blue-400 uppercase leading-none">
