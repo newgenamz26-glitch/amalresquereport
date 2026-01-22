@@ -4,7 +4,7 @@ import {
   Cloud, Zap, Shield, Settings, Globe, Navigation, 
   RefreshCw, X, Code, Copy, Loader2, ChevronDown, 
   Wifi, WifiOff, Sparkles, Database, User, MapPin, 
-  Briefcase, Edit3, Search
+  Briefcase, Edit3, Search, Map
 } from 'lucide-react';
 import { StorageMode, ProgramData } from '../types';
 import { fetchFromSheet } from '../services/googleSheetService';
@@ -38,6 +38,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
   const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
   const [dbPingStatus, setDbPingStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
   const [geminiStatus, setGeminiStatus] = useState<'idle' | 'checking' | 'active' | 'inactive'>('idle');
+  const [gpsStatus, setGpsStatus] = useState<'idle' | 'checking' | 'active' | 'denied' | 'error'>('idle');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
       checkGeminiAvailability();
       testDatabase();
     }
+    checkGPS();
     
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -55,6 +57,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOnline]);
+
+  const checkGPS = () => {
+    setGpsStatus('checking');
+    if (!navigator.geolocation) {
+      setGpsStatus('error');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      () => setGpsStatus('active'),
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) setGpsStatus('denied');
+        else setGpsStatus('error');
+      },
+      { timeout: 5000 }
+    );
+  };
 
   const checkGeminiAvailability = async () => {
     setGeminiStatus('checking');
@@ -138,6 +156,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isOnline }) => {
           </div>
           <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${isOnline ? 'text-emerald-600' : 'text-rose-600'}`}>
             {isOnline ? 'Online' : 'Offline'}
+          </span>
+        </div>
+
+        {/* GPS Status Item */}
+        <div 
+          onClick={checkGPS}
+          className={`flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden cursor-pointer active:scale-95 ${gpsStatus === 'active' ? 'border-emerald-100' : gpsStatus === 'denied' ? 'border-rose-100' : 'border-amber-100'}`}
+        >
+          <div className="shrink-0">
+            <Navigation size={16} className={gpsStatus === 'active' ? 'text-emerald-500' : gpsStatus === 'denied' ? 'text-rose-500' : 'text-amber-500'} />
+          </div>
+          <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${gpsStatus === 'active' ? 'text-emerald-600' : gpsStatus === 'denied' ? 'text-rose-600' : 'text-amber-600'}`}>
+            GP: {gpsStatus === 'active' ? 'Active' : gpsStatus === 'checking' ? 'Ping...' : (gpsStatus === 'denied' ? 'Blocked' : 'Error')}
           </span>
         </div>
 
