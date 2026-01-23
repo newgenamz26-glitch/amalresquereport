@@ -343,7 +343,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
               onClick={onAbout} 
               className="flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-2xl border border-slate-100 transition-all group"
             >
-              <ShieldCheck size={16} className="group-hover:scale-110 transition-transform" />
+              <Info size={16} className="group-hover:scale-110 transition-transform" />
               <span className="text-[9px] font-black uppercase tracking-widest">Tentang</span>
             </button>
           </div>
