@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Activity, Menu, RefreshCw, Cloud, LogOut, History, TrendingUp, Flag, Wifi, WifiOff, CloudOff, ShieldCheck, Clock, Hospital, Database, Settings } from 'lucide-react';
+import { Activity, Menu, RefreshCw, Cloud, LogOut, History, TrendingUp, Flag, Wifi, WifiOff, CloudOff, ShieldCheck, Clock, Hospital, Database, Settings, Info } from 'lucide-react';
 import { UserSession, SyncStatus, StorageMode } from '../types';
 
 export const Header = ({ user, isOnline, syncStatus, onSync, onMenu, isDbConnected }: { user: UserSession | null, isOnline: boolean, syncStatus: SyncStatus, onSync: () => void, onMenu: () => void, isDbConnected?: boolean | null }) => (
@@ -72,7 +72,7 @@ export const Header = ({ user, isOnline, syncStatus, onSync, onMenu, isDbConnect
   </header>
 );
 
-export const Sidebar = ({ isOpen, onClose, activeTab, onTabChange, user, onLogout }: any) => {
+export const Sidebar = ({ isOpen, onClose, activeTab, onTabChange, user, onLogout, onAbout }: any) => {
   if (!isOpen) return null;
   const menuItems = [
     { id: 'main', icon: <Activity size={20}/>, label: 'Dashboard' },
@@ -100,6 +100,10 @@ export const Sidebar = ({ isOpen, onClose, activeTab, onTabChange, user, onLogou
               {item.icon} {item.label}
             </button>
           ))}
+          <button onClick={() => { onAbout(); onClose(); }} 
+            className={`w-full flex items-center gap-5 p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 text-slate-500 hover:bg-slate-50`}>
+            <Info size={20}/> Tentang Sistem
+          </button>
         </div>
         <div className="mt-auto space-y-4 pt-8">
           <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">

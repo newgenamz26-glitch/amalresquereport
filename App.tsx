@@ -5,7 +5,7 @@ import { AppState, CaseRecord } from './types';
 import { useResponderStore } from './hooks/useResponderStore';
 import { Header, Sidebar } from './components/Layout';
 import { DashboardView, HistoryView, LogRecordsView, SummaryView, ReferralView, DatabaseSettingsView } from './components/Views';
-import { CaseEntryModal, CaseDetailModal, SubmissionSuccessModal, WhatsAppPreviewModal } from './components/Modals';
+import { CaseEntryModal, CaseDetailModal, SubmissionSuccessModal, WhatsAppPreviewModal, AboutModal } from './components/Modals';
 import LoginForm from './components/LoginForm';
 import { getNearbyMedicalFacilities } from './services/geminiService';
 
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'main' | 'history' | 'logs' | 'referral' | 'settings'>('main');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<CaseRecord | null>(null);
   const [referralData, setReferralData] = useState<any>(null);
   
@@ -66,7 +67,7 @@ const App: React.FC = () => {
     </div>
   );
 
-  if (store.appState === AppState.LOGIN) return <LoginForm onLogin={store.login} isOnline={store.isOnline} />;
+  if (store.appState === AppState.LOGIN) return <LoginForm onLogin={store.login} onAbout={() => setIsAboutModalOpen(true)} isOnline={store.isOnline} />;
 
   if (store.appState === AppState.SUMMARY) return <SummaryView summary={store.lastSummary} onConfirm={store.confirmLogout} />;
 
@@ -156,6 +157,7 @@ const App: React.FC = () => {
         onTabChange={setActiveTab} 
         user={store.user} 
         onLogout={store.logout} 
+        onAbout={() => setIsAboutModalOpen(true)}
       />
 
       <CaseEntryModal 
@@ -171,6 +173,8 @@ const App: React.FC = () => {
         onClose={() => setSelectedCase(null)} 
       />
 
+      <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+      
       <SubmissionSuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} onShare={() => { setShowSuccessModal(false); setShowWAPreview(true); }} />
       <WhatsAppPreviewModal isOpen={showWAPreview} selectedCase={lastSubmittedCase} onClose={() => setShowWAPreview(false)} />
     </div>
