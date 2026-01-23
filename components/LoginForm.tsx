@@ -6,7 +6,7 @@ import {
   Wifi, WifiOff, Sparkles, Database, User, MapPin, 
   Briefcase, Edit3, Search, Map, HelpCircle, ChevronRight, 
   ChevronLeft, Info, BookOpen, Share2, FileText, Download,
-  CheckCircle2, ShieldCheck
+  CheckCircle2, ShieldCheck, Eye, Printer, ShieldCheck as ShieldIcon
 } from 'lucide-react';
 import { StorageMode, ProgramData } from '../types';
 import { fetchFromSheet } from '../services/googleSheetService';
@@ -39,6 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showGuidePreview, setShowGuidePreview] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
   const [isLoadingPrograms, setIsLoadingPrograms] = useState(false);
   const [dbPingStatus, setDbPingStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
@@ -168,7 +169,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
     }
   };
 
-  const handleDownloadGuidePDF = () => {
+  const handlePrintGuide = () => {
     const printContent = document.getElementById('guide-print-view');
     if (!printContent) return;
     const originalBody = document.body.innerHTML;
@@ -209,6 +210,39 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
     }
   ];
 
+  const GuidePDFContent = () => (
+    <div className="space-y-10">
+      <div className="text-center border-b-4 border-blue-600 pb-8">
+        <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-1">PANDUAN PENGGUNA</h1>
+        <h2 className="text-5xl font-black text-blue-600 italic tracking-tighter uppercase">Responder Cloud</h2>
+        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mt-4">Sistem Operasi Kecemasan Awan ResQ Amal</p>
+      </div>
+
+      <div className="space-y-8">
+        {guideContent.map((g, idx) => (
+          <div key={idx} className="p-6 border border-slate-200 rounded-3xl bg-slate-50">
+            <h3 className="text-sm font-black text-blue-600 uppercase tracking-widest mb-2">LANGKAH {idx + 1}: {g.title}</h3>
+            <p className="text-[11px] text-slate-600 font-medium mb-4 leading-relaxed">{g.desc}</p>
+            <div className="space-y-2">
+               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tindakan Utama:</p>
+               {g.steps.map((s, i) => (
+                 <div key={i} className="flex gap-3 text-[10px] font-bold text-slate-900">
+                    <span className="text-blue-600 shrink-0">[{i+1}]</span>
+                    <span>{s}</span>
+                 </div>
+               ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-10 border-t border-slate-100 flex justify-between items-center opacity-50">
+         <p className="text-[10px] font-black uppercase italic">ResQ Amal IT Unit</p>
+         <p className="text-[9px] font-bold">Dokumen Latihan Rasmi v2.5</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
       
@@ -227,7 +261,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
           <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${dbPingStatus === 'ok' ? 'text-blue-600' : 'text-slate-400'}`}>DB: {dbPingStatus === 'ok' ? 'Linked' : 'Offline'}</span>
         </div>
         <button onClick={() => setShowGuide(true)} className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden hover:bg-blue-50">
-          <div className="shrink-0"><HelpCircle size={16} className="text-blue-500" /></div>
+          <div className="shrink-0"><BookOpen size={16} className="text-blue-500" /></div>
           <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-blue-600">Panduan</span>
         </button>
         <button onClick={onAbout} className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden hover:bg-emerald-50">
@@ -292,10 +326,25 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
             </div>
             <button type="submit" className={`w-full py-6 rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${loginData.isSimulasi ? 'bg-amber-600 text-white shadow-amber-200' : 'bg-slate-900 text-white shadow-slate-200'}`}>Mula Bertugas <Navigation size={18} /></button>
           </form>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <button onClick={() => setShowGuide(true)} className="text-[10px] font-black text-slate-400 hover:text-blue-600 uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-colors"><BookOpen size={14}/> Panduan Penggunaan Sistem</button>
-            <button onClick={onAbout} className="text-[10px] font-black text-slate-400 hover:text-emerald-600 uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-colors"><ShieldCheck size={14}/> Tentang ResQ Cloud</button>
+          
+          {/* Enhanced Center Bottom Buttons */}
+          <div className="mt-10 grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => setShowGuide(true)} 
+              className="flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-2xl border border-slate-100 transition-all group"
+            >
+              <BookOpen size={16} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Panduan</span>
+            </button>
+            <button 
+              onClick={onAbout} 
+              className="flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-2xl border border-slate-100 transition-all group"
+            >
+              <ShieldCheck size={16} className="group-hover:scale-110 transition-transform" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Tentang</span>
+            </button>
           </div>
+          <p className="text-[7px] font-black text-slate-300 uppercase tracking-[0.5em] text-center mt-6">ResQ Amal Malaysia IT Unit</p>
         </div>
       </div>
 
@@ -305,7 +354,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
           <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-10 shadow-4xl animate-in zoom-in-95 flex flex-col min-h-[600px] relative overflow-hidden">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><Info size={20} /></div>
+                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><HelpCircle size={20} /></div>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter">Panduan Interaktif</h3>
               </div>
               <button onClick={() => { setShowGuide(false); setGuideStep(0); }} className="text-slate-300 hover:text-slate-900"><X size={24}/></button>
@@ -317,9 +366,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
                   {copySuccess ? <CheckCircle2 size={14} /> : <Share2 size={14} />}
                   <span className="text-[9px] font-black uppercase tracking-widest">{copySuccess ? 'Pautan Disalin' : 'Kongsi Pautan Sistem'}</span>
                </button>
-               <button onClick={handleDownloadGuidePDF} className="flex-1 p-3 bg-slate-50 text-slate-500 rounded-2xl border border-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all">
-                  <FileText size={14} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">Simpan sbg PDF</span>
+               <button onClick={() => setShowGuidePreview(true)} className="flex-1 p-3 bg-slate-50 text-slate-500 rounded-2xl border border-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                  <Eye size={14} />
+                  <span className="text-[9px] font-black uppercase tracking-widest">Previu Panduan PDF</span>
                </button>
             </div>
 
@@ -364,29 +413,42 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
         </div>
       )}
 
-      {/* HIDDEN PRINT VIEW FOR GUIDE PDF */}
-      <div id="guide-print-view" className="hidden">
-        <div style={{ padding: '50px', fontFamily: 'Arial, sans-serif' }}>
-          <div style={{ textAlign: 'center', borderBottom: '3px solid #2563eb', paddingBottom: '20px', marginBottom: '30px' }}>
-            <h1 style={{ margin: 0, color: '#2563eb', textTransform: 'uppercase' }}>Panduan Penggunaan ResQ Cloud</h1>
-            <p style={{ margin: '5px 0', fontSize: '14px', color: '#64748b' }}>Sistem Pengurusan Kes Medik Awan - ResQ Amal</p>
-          </div>
-          {guideContent.map((g, idx) => (
-            <div key={idx} style={{ marginBottom: '40px', pageBreakInside: 'avoid' }}>
-              <h2 style={{ color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>Langkah {idx + 1}: {g.title}</h2>
-              <p style={{ fontSize: '14px', color: '#475569', marginBottom: '15px' }}>{g.desc}</p>
-              <h4 style={{ margin: '10px 0', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Tindakan Utama:</h4>
-              <ul style={{ paddingLeft: '20px' }}>
-                {g.steps.map((s, i) => (
-                  <li key={i} style={{ fontSize: '13px', color: '#1e293b', marginBottom: '8px' }}>{s}</li>
-                ))}
-              </ul>
+      {/* PDF PREVIEW FOR GUIDE */}
+      {showGuidePreview && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 sm:p-8">
+          <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowGuidePreview(false)}></div>
+          <div className="bg-slate-100 w-full max-w-2xl h-full max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-4xl relative z-10 flex flex-col animate-in zoom-in-95">
+            <div className="p-6 bg-white border-b border-slate-200 flex justify-between items-center shrink-0">
+               <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-600 text-white rounded-lg"><Eye size={18} /></div>
+                  <h3 className="font-black uppercase italic tracking-tighter text-slate-900">Previu Panduan</h3>
+               </div>
+               <div className="flex items-center gap-2">
+                  <button onClick={handlePrintGuide} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-200 active:scale-95 transition-all">
+                     <Printer size={14} /> Cetak / Simpan PDF
+                  </button>
+                  <button onClick={() => setShowGuidePreview(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><X size={24}/></button>
+               </div>
             </div>
-          ))}
-          <div style={{ marginTop: '50px', borderTop: '1px solid #ddd', paddingTop: '20px', textAlign: 'center', fontSize: '10px', color: '#94a3b8' }}>
-            <p>Dokumen Panduan Rasmi ResQ Cloud. Dijana secara automatik oleh sistem.</p>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-12 custom-scrollbar bg-slate-200/50">
+               <div className="bg-white shadow-2xl mx-auto min-h-[100%] w-full max-w-[210mm] p-8 sm:p-16 text-slate-900 relative">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none rotate-[-30deg]">
+                     <Shield size={400} />
+                  </div>
+                  <div className="relative z-10">
+                     <GuidePDFContent />
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* HIDDEN PRINT VIEW FOR GUIDE PDF */}
+      <div id="guide-print-view" className="hidden">
+         <div style={{ padding: '40px', fontFamily: 'Arial, sans-serif' }}>
+            <GuidePDFContent />
+         </div>
       </div>
 
       {/* Settings Modal */}
