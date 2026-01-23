@@ -302,7 +302,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
                 </div>
                 <div className="relative group">
                   <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={18}/><input required autoComplete="off" placeholder={loginData.mode === StorageMode.LOCAL ? "Taip nama program..." : "Cari nama program cloud..."} value={loginData.programName} onFocus={() => setShowDropdown(true)} onChange={e => { setLoginData({...loginData, programName: e.target.value}); setShowDropdown(true); }} className="w-full p-4 pl-12 bg-slate-50 rounded-2xl font-bold text-sm border-none outline-none focus:ring-4 ring-blue-500/10 transition-all" />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">{isLoadingPrograms && <Loader2 className="animate-spin text-blue-500" size={14}/><ChevronDown className={`text-slate-300 transition-transform ${showDropdown ? 'rotate-180' : ''}`} size={18} />}</div>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {isLoadingPrograms && <Loader2 className="animate-spin text-blue-500" size={14} />}
+                    <ChevronDown className={`text-slate-300 transition-transform ${showDropdown ? 'rotate-180' : ''}`} size={18} />
+                  </div>
                 </div>
                 {showDropdown && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-3xl border border-slate-100 z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
