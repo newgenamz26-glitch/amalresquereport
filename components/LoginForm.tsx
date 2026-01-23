@@ -6,7 +6,7 @@ import {
   Wifi, WifiOff, Sparkles, Database, User, MapPin, 
   Briefcase, Edit3, Search, Map, HelpCircle, ChevronRight, 
   ChevronLeft, Info, BookOpen, Share2, FileText, Download,
-  CheckCircle2, ShieldCheck, Eye, Printer, ShieldCheck as ShieldIcon
+  CheckCircle2, ShieldCheck, Eye, Printer
 } from 'lucide-react';
 import { StorageMode, ProgramData } from '../types';
 import { fetchFromSheet } from '../services/googleSheetService';
@@ -261,12 +261,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
           <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${dbPingStatus === 'ok' ? 'text-blue-600' : 'text-slate-400'}`}>DB: {dbPingStatus === 'ok' ? 'Linked' : 'Offline'}</span>
         </div>
         <button onClick={() => setShowGuide(true)} className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden hover:bg-blue-50">
-          <div className="shrink-0"><BookOpen size={16} className="text-blue-500" /></div>
+          <div className="shrink-0"><HelpCircle size={16} className="text-blue-500" /></div>
           <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-blue-600">Panduan</span>
-        </button>
-        <button onClick={onAbout} className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden hover:bg-emerald-50">
-          <div className="shrink-0"><Info size={16} className="text-emerald-500" /></div>
-          <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100 text-emerald-600">Tentang</span>
         </button>
         <button onClick={() => setShowSettings(true)} className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-100 shadow-lg transition-all duration-300 w-10 group-hover:w-32 overflow-hidden hover:bg-slate-50">
           <div className="shrink-0"><Settings size={16} className="text-slate-400" /></div>
@@ -329,25 +325,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
             </div>
             <button type="submit" className={`w-full py-6 rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${loginData.isSimulasi ? 'bg-amber-600 text-white shadow-amber-200' : 'bg-slate-900 text-white shadow-slate-200'}`}>Mula Bertugas <Navigation size={18} /></button>
           </form>
-          
-          {/* Enhanced Center Bottom Buttons */}
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            <button 
-              onClick={() => setShowGuide(true)} 
-              className="flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-2xl border border-slate-100 transition-all group"
-            >
-              <BookOpen size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Panduan</span>
-            </button>
-            <button 
-              onClick={onAbout} 
-              className="flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-2xl border border-slate-100 transition-all group"
-            >
-              <Info size={16} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Tentang</span>
-            </button>
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <button onClick={() => setShowGuide(true)} className="text-[10px] font-black text-slate-400 hover:text-blue-600 uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-colors"><BookOpen size={14}/> Panduan Penggunaan Sistem</button>
           </div>
-          <p className="text-[7px] font-black text-slate-300 uppercase tracking-[0.5em] text-center mt-6">ResQ Amal Malaysia IT Unit</p>
         </div>
       </div>
 
@@ -357,7 +337,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onAbout, isOnline }) => 
           <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-10 shadow-4xl animate-in zoom-in-95 flex flex-col min-h-[600px] relative overflow-hidden">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><HelpCircle size={20} /></div>
+                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><Info size={20} /></div>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter">Panduan Interaktif</h3>
               </div>
               <button onClick={() => { setShowGuide(false); setGuideStep(0); }} className="text-slate-300 hover:text-slate-900"><X size={24}/></button>
