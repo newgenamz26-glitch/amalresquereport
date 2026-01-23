@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Activity, TrendingUp, MapPin, ChevronRight, Search, PlusCircle, History, Phone, AlertTriangle, ShieldCheck, Navigation, Hospital, LogIn, LogOut, Clock, CheckCircle2, ClipboardCheck, Calendar, UserCheck, Stethoscope, Map as MapIcon, ExternalLink, Zap, Info, ChevronDown, ChevronUp, Database, RefreshCw, Globe, Server, Check, Shield, Cloud, List, AlertCircle, HardDrive, Code, Loader2, UserPlus, Fingerprint, Sparkles, Link as LinkIcon, Copy, Trash2, DownloadCloud, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Activity, TrendingUp, MapPin, ChevronRight, Search, PlusCircle, History, Phone, AlertTriangle, ShieldCheck, Navigation, Hospital, LogIn, LogOut, Clock, CheckCircle2, ClipboardCheck, Calendar, UserCheck, Stethoscope, Map as MapIcon, ExternalLink, Zap, Info, ChevronDown, ChevronUp, Database, RefreshCw, Globe, Server, Check, Shield, Cloud, List, AlertCircle, HardDrive, Code, Loader2, UserPlus, Fingerprint, Sparkles, Link as LinkIcon, Copy, Trash2, DownloadCloud, ToggleLeft, ToggleRight, Satellite, ZapOff } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { CaseRecord, Gender, UserLog, SessionSummary, SyncStatus, UserSession, StorageMode } from '../types';
 
@@ -172,12 +172,32 @@ export const DatabaseSettingsView = ({
   cases
 }: any) => {
   const [testing, setTesting] = useState(false);
+  const [testingGps, setTestingGps] = useState(false);
+  const [gpsLatency, setGpsLatency] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleTest = async () => {
     setTesting(true);
     await onTest();
     setTesting(false);
+  };
+
+  const handleGpsTest = () => {
+    setTestingGps(true);
+    const start = Date.now();
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const end = Date.now();
+        setGpsLatency(end - start);
+        setTestingGps(false);
+      },
+      (err) => {
+        console.error("GPS Test Error:", err);
+        setGpsLatency(null);
+        setTestingGps(false);
+      },
+      { timeout: 5000, enableHighAccuracy: true }
+    );
   };
 
   const copyLinkedId = () => {
@@ -227,6 +247,61 @@ export const DatabaseSettingsView = ({
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[8px] font-black uppercase ${isDbConnected ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
           <div className={`w-1.5 h-1.5 rounded-full ${isDbConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></div>
           {isDbConnected ? 'Cloud Online' : 'Offline'}
+        </div>
+      </div>
+
+      {/* Ujian Diagnostik & Latensi */}
+      <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+             <Satellite size={18}/>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Ujian Diagnostik & Latensi</h4>
+            <p className="text-[8px] font-bold text-slate-400 uppercase">Uji responsif rangkaian & perkakasan</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Database Connection Test */}
+          <button 
+            onClick={handleTest}
+            disabled={testing}
+            className={`p-6 border rounded-[2rem] flex flex-col items-center gap-4 active:scale-95 transition-all group ${isDbConnected ? 'bg-emerald-50/30 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
+          >
+            <div className={`p-4 rounded-2xl shadow-sm ${isDbConnected ? 'bg-emerald-500 text-white' : (isDbConnected === false ? 'bg-rose-500 text-white' : 'bg-blue-600 text-white')}`}>
+              {testing ? <RefreshCw size={24} className="animate-spin" /> : <Database size={24} />}
+            </div>
+            <div className="text-center space-y-1">
+              <span className="text-[9px] font-black uppercase text-slate-900 block leading-none">Uji Sambungan Sheet</span>
+              <div className="flex flex-col items-center gap-0.5">
+                <span className={`text-[8px] font-black uppercase ${isDbConnected ? 'text-emerald-600' : (isDbConnected === false ? 'text-rose-600' : 'text-slate-400')}`}>
+                  {isDbConnected === null ? 'SEDIA DIUJI' : isDbConnected ? 'BERSAMBUNG' : 'GAGAL'}
+                </span>
+                {latency && <span className="text-[10px] font-black text-blue-600 italic tracking-tighter">{latency}ms</span>}
+              </div>
+            </div>
+          </button>
+
+          {/* GPS Response Test */}
+          <button 
+            onClick={handleGpsTest}
+            disabled={testingGps}
+            className={`p-6 border rounded-[2rem] flex flex-col items-center gap-4 active:scale-95 transition-all group ${gpsLatency ? 'bg-emerald-50/30 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
+          >
+            <div className={`p-4 rounded-2xl shadow-sm ${gpsLatency ? 'bg-emerald-500 text-white' : 'bg-rose-600 text-white'}`}>
+              {testingGps ? <Satellite size={24} className="animate-pulse" /> : <Navigation size={24} />}
+            </div>
+            <div className="text-center space-y-1">
+              <span className="text-[9px] font-black uppercase text-slate-900 block leading-none">Uji Ping GPS</span>
+              <div className="flex flex-col items-center gap-0.5">
+                <span className={`text-[8px] font-black uppercase ${gpsLatency ? 'text-emerald-600' : (testingGps ? 'text-amber-600' : 'text-slate-400')}`}>
+                  {testingGps ? 'PENCARIAN...' : gpsLatency ? 'REPLY OK' : 'UJI SEKARANG'}
+                </span>
+                {gpsLatency && <span className="text-[10px] font-black text-rose-600 italic tracking-tighter">{gpsLatency}ms</span>}
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
